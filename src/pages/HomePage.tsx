@@ -255,20 +255,26 @@ const HomePage: React.FC = () => {
               </button>
             </div>
           </form>
-
-          {/* Thank You Modal */}
-          {showAlert && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="bg-white rounded-3xl p-8 max-w-md mx-auto shadow-2xl text-center animate-fadeIn">
-                <Heart className="w-12 h-12 text-[#bba987] mx-auto mb-4 animate-pulse" />
-                <h3 className="text-2xl font-semibold text-[#4e4637] mb-2">Thank You!</h3>
-                <p className="text-[#4e4637]/80 mb-6">Your order request has been sent. I’ll get back to you within 24 hours with a custom quote ✨</p>
-                <button onClick={() => setShowAlert(false)} className="px-6 py-3 bg-[#bba987] text-white rounded-full font-semibold hover:bg-[#4e4637] transition-colors duration-300">Close</button>
-              </div>
-            </div>
-          )}
         </div>
       </section>
+      {/* Thank You Modal */}
+      {showAlert && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-3xl p-8 max-w-md mx-auto shadow-2xl text-center animate-fadeIn">
+            <Heart className="w-12 h-12 text-[#bba987] mx-auto mb-4 animate-pulse" />
+            <h3 className="text-2xl font-semibold text-[#4e4637] mb-2">Thank You!</h3>
+            <p className="text-[#4e4637]/80 mb-6">
+              Your order request has been sent. I’ll get back to you within 24 hours with a custom quote ✨
+            </p>
+            <button
+              onClick={() => setShowAlert(false)}
+              className="px-6 py-3 bg-[#bba987] text-white rounded-full font-semibold hover:bg-[#4e4637] transition-colors duration-300"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Contact Section */}
       <section id="contact" className="py-20 px-6 relative">
