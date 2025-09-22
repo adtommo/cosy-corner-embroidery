@@ -62,7 +62,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     Object.entries(formData).forEach(([key, value]) => payload.append(key, value));
     selectedFiles.forEach(file => payload.append('files', file));
 
-    const response = await fetch('/api', { method: 'POST', body: payload });
+    const response = await fetch('/api/send', { method: 'POST', body: payload });
 
     const result = await response.json();
     if (response.ok) {
