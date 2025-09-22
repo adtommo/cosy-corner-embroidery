@@ -334,7 +334,7 @@ const HomePage: React.FC = () => {
               <h3 className="text-xl font-semibold mb-4 text-[#4e4637]">Follow Us</h3>
               <p className="text-[#4e4637]/70">Stay updated with my latest creations!</p>
             </div>
-            <div onClick={() => window.open('https://l.messenger.com')} className="bg-white/80 backdrop-blur-lg cursor-pointer rounded-3xl p-8 shadow-xl border border-[#bba987]/30 transform hover:scale-105 transition-transform duration-300">
+            <div onClick={() => window.open('https://m.me/embroiderycosycorner')} className="bg-white/80 backdrop-blur-lg cursor-pointer rounded-3xl p-8 shadow-xl border border-[#bba987]/30 transform hover:scale-105 transition-transform duration-300">
               <MessageCircle className="w-8 h-8 mx-auto mb-4 text-[#bba987]" />
               <h3 className="text-xl font-semibold mb-4 text-[#4e4637]">Send a Message</h3>
               <p className="text-[#4e4637]/70">Reach out for custom requests or questions!</p>
