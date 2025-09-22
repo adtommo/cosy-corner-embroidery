@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, Sparkles, MessageCircle, Users } from 'lucide-react';
+import { Heart, Sparkles, MessageCircle, Users, HandHeart, Star } from 'lucide-react';
 import { SiFacebook } from '@icons-pack/react-simple-icons';
 import logo from '/logo.jpg';
 import { Avatar } from '@mui/material';
@@ -183,6 +183,54 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* About Section */}
+      <section className="py-20 px-6 relative">
+        <div className="relative z-10 max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl md:text-6xl font-serif text-[#4e4637] mb-6">Hi, I'm Ellie! 👋</h2>
+            <div className="w-32 h-1 bg-[#bba987] mx-auto rounded-full"></div>
+          </div>
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="space-y-8">
+              <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 shadow-xl border border-[#bba987]/30 transform hover:scale-105 transition-transform duration-300">
+                <p className="text-lg text-[#4e4637] leading-relaxed mb-6">
+                  I believe in the magic of <span className="text-[#bba987] font-semibold">handmade beauty</span>. Every piece I create is infused with love, care, and countless hours of passionate craftsmanship.
+                </p>
+                <p className="text-lg text-[#4e4637] leading-relaxed mb-6">
+                  From <span className="text-[#bba987] font-semibold">whimsical designs</span> to <span className="text-[#bba987] font-semibold">elegant monograms</span>, I work to bring your vision to life.
+                </p>
+                <p className="text-lg text-[#4e4637] leading-relaxed">
+                  Let's create something <span className="text-[#bba987] font-semibold">extraordinary</span> together, something that will be treasured for years to come!
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {['Hand Stitched', 'Custom Designs', 'Personal Touch', 'Made with Love'].map((badge, index) => (
+                  <span key={index} className="px-4 py-2 bg-[#bba987]/30 text-[#4e4637] rounded-full text-sm font-medium shadow-md hover:shadow-lg hover:bg-[#bba987]/50 transition-all duration-300">
+                    {badge}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#bba987]/30 to-[#bba987]/50 rounded-3xl blur-2xl opacity-50 animate-pulse"></div>
+              <div className="relative bg-white/90 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-[#bba987]/30 text-center transform hover:rotate-1 transition-transform duration-300">
+                <div className="flex justify-center mb-6">
+                  <HandHeart size={200} />
+                </div>
+                <h3 className="text-2xl font-serif text-[#4e4637] mb-4">Made with care</h3>
+                <p className="text-[#4e4637]/80 italic">From my hands to yours</p>
+                <div className="mt-6 flex justify-center space-x-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-[#bba987] fill-current animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
 
       {/* Services Section */}
       <section id="services" className="py-20 px-6 relative">
