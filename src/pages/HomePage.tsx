@@ -19,13 +19,14 @@ interface Service {
   color: string;
 }
 
-const MAX_TOTAL_SIZE = 8 * 1024 * 1024; // 8 MB safe limit
+const MAX_TOTAL_SIZE = 5 * 1024 * 1024; // Reduced to 5MB for safety
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB per file
 
-// Utility: compress image using canvas
+// Enhanced image compression
 const compressImage = (
   file: File,
-  maxWidth = 1200,
-  quality = 0.7
+  maxWidth = 800, // Reduced from 1200
+  quality = 0.6 // Reduced from 0.7
 ): Promise<File> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -40,9 +41,15 @@ const compressImage = (
       const canvas = document.createElement('canvas');
       let { width, height } = img;
 
-      if (width > maxWidth) {
-        height = (height * maxWidth) / width;
-        width = maxWidth;
+      // More aggressive resizing
+      if (width > maxWidth || height > maxWidth) {
+        if (width > height) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        } else {
+          width = (width * maxWidth) / height;
+          height = maxWidth;
+        }
       }
 
       canvas.width = width;
@@ -50,18 +57,30 @@ const compressImage = (
       const ctx = canvas.getContext('2d');
       if (!ctx) return reject('Failed to get canvas context');
 
+      // Improve image quality
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(img, 0, 0, width, height);
 
       canvas.toBlob(
         blob => {
           if (!blob) return reject('Compression failed');
-          resolve(new File([blob], file.name, { type: file.type }));
+          
+          // Create a new file name to indicate compression
+          const compressedName = file.name.replace(/\.(jpg|jpeg|png|webp)$/i, '_compressed.$1');
+          const compressedFile = new File([blob], compressedName, { 
+            type: file.type || 'image/jpeg' 
+          });
+          
+          console.log(`Compressed ${file.name}: ${(file.size/1024).toFixed(1)}KB → ${(compressedFile.size/1024).toFixed(1)}KB`);
+          resolve(compressedFile);
         },
-        file.type,
+        file.type || 'image/jpeg',
         quality
       );
     };
 
+    img.onerror = () => reject('Image loading failed');
     reader.onerror = () => reject('File reading failed');
     reader.readAsDataURL(file);
   });
@@ -78,7 +97,9 @@ const HomePage: React.FC = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
   const [totalSize, setTotalSize] = useState(0);
+  const [isCompressing, setIsCompressing] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -87,27 +108,65 @@ const HomePage: React.FC = () => {
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
 
+    setIsCompressing(true);
     const compressedFiles: File[] = [];
     let newTotalSize = totalSize;
+    let skippedFiles: string[] = [];
 
     for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      // Check if it's an image
+      if (!file.type.startsWith('image/')) {
+        skippedFiles.push(`${file.name} (not an image)`);
+        continue;
+      }
+
+      // Check individual file size before compression
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit before compression
+        skippedFiles.push(`${file.name} (too large: ${(file.size/1024/1024).toFixed(1)}MB)`);
+        continue;
+      }
+
       try {
-        const compressed = await compressImage(files[i]);
-        newTotalSize += compressed.size;
-        if (newTotalSize > MAX_TOTAL_SIZE) {
-          alert('Total file size exceeds 8 MB. Remove some files or choose smaller images.');
-          break;
+        const compressed = await compressImage(file);
+        
+        // Check if compressed file still too large
+        if (compressed.size > MAX_FILE_SIZE) {
+          skippedFiles.push(`${file.name} (still too large after compression)`);
+          continue;
         }
+
+        // Check total size
+        if (newTotalSize + compressed.size > MAX_TOTAL_SIZE) {
+          skippedFiles.push(`${file.name} (would exceed total size limit)`);
+          continue;
+        }
+
+        newTotalSize += compressed.size;
         compressedFiles.push(compressed);
-      } catch {
-        console.warn(`Failed to compress ${files[i].name}`);
+        
+      } catch (error) {
+        console.warn(`Failed to compress ${file.name}:`, error);
+        skippedFiles.push(`${file.name} (compression failed)`);
       }
     }
 
-    setSelectedFiles(prev => [...prev, ...compressedFiles]);
-    setTotalSize(prev => prev + compressedFiles.reduce((acc, f) => acc + f.size, 0));
+    if (compressedFiles.length > 0) {
+      setSelectedFiles(prev => [...prev, ...compressedFiles]);
+      setTotalSize(newTotalSize);
+    }
+
+    if (skippedFiles.length > 0) {
+      alert(`Some files were skipped:\n${skippedFiles.join('\n')}`);
+    }
+
+    setIsCompressing(false);
+    
+    // Reset the file input
+    e.target.value = '';
   };
 
   const removeFile = (index: number) => {
@@ -118,13 +177,25 @@ const HomePage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.firstName || !formData.email || !formData.description) {
-      alert('Please fill in all required fields.');
+    
+    // Validation
+    if (!formData.firstName.trim()) {
+      alert('Please enter your first name.');
+      return;
+    }
+    
+    if (!formData.email.trim()) {
+      alert('Please enter your email address.');
+      return;
+    }
+    
+    if (!formData.description.trim()) {
+      alert('Please describe your project.');
       return;
     }
 
     if (totalSize > MAX_TOTAL_SIZE) {
-      alert('Total file size exceeds 8 MB. Remove some files before submitting.');
+      alert(`Total file size (${(totalSize/1024/1024).toFixed(1)}MB) exceeds the 5MB limit. Please remove some files.`);
       return;
     }
 
@@ -132,22 +203,59 @@ const HomePage: React.FC = () => {
 
     try {
       const payload = new FormData();
-      Object.entries(formData).forEach(([key, value]) => payload.append(key, value));
-      selectedFiles.forEach(file => payload.append('files', file));
+      
+      // Add form data
+      payload.append('firstName', formData.firstName.trim());
+      payload.append('lastName', formData.lastName.trim());
+      payload.append('email', formData.email.trim());
+      payload.append('phone', formData.phone.trim());
+      payload.append('description', formData.description.trim());
+      
+      // Add files
+      selectedFiles.forEach((file, index) => {
+        payload.append('files', file, file.name);
+      });
 
-      const response = await fetch('/api/send', { method: 'POST', body: payload });
+      console.log('Submitting form with:', {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        description: formData.description.substring(0, 100) + '...',
+        fileCount: selectedFiles.length,
+        totalSize: `${(totalSize/1024/1024).toFixed(1)}MB`
+      });
+
+      const response = await fetch('/api/send', { 
+        method: 'POST', 
+        body: payload 
+      });
+      
       const result = await response.json();
 
       if (response.ok) {
-        setFormData({ firstName: '', lastName: '', email: '', phone: '', description: '' });
+        // Success
+        setFormData({ 
+          firstName: '', 
+          lastName: '', 
+          email: '', 
+          phone: '', 
+          description: '' 
+        });
         setSelectedFiles([]);
         setTotalSize(0);
+        setAlertMessage('Your order request has been sent successfully! I\'ll get back to you within 24 hours with a custom quote ✨');
         setShowAlert(true);
       } else {
-        alert(result?.message || 'Form submission failed');
+        // Error from server
+        console.error('Server error:', result);
+        setAlertMessage(result?.message || `Failed to send order request. Please try again or contact us directly.`);
+        setShowAlert(true);
       }
-    } catch {
-      alert('Error submitting form.');
+    } catch (error) {
+      console.error('Network error:', error);
+      setAlertMessage('Network error. Please check your connection and try again.');
+      setShowAlert(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -155,7 +263,7 @@ const HomePage: React.FC = () => {
 
   const services: Service[] = [
     { icon: '👕', title: 'Wearable Art', description: 'Elevate your wardrobe with hand-embroidered designs.', color: 'from-[#bba987]/30 to-[#bba987]/50' },
-    { icon: '🎁', title: 'Personalised Gifts', description: 'Celebrate life’s milestones with embroidered keepsakes.', color: 'from-[#bba987]/40 to-[#bba987]/60' },
+    { icon: '🎁', title: 'Personalised Gifts', description: `Celebrate life's milestones with embroidered keepsakes.`, color: 'from-[#bba987]/40 to-[#bba987]/60' },
     { icon: '🪡', title: 'Custom Home Embroidery', description: 'Add warmth to your home with embroidered décor.', color: 'from-[#bba987]/35 to-[#bba987]/55' },
     { icon: '✨', title: 'One-of-a-Kind Creations', description: 'Collaborate on unique hand-embroidered pieces.', color: 'from-[#bba987]/45 to-[#bba987]/65' }
   ];
@@ -231,7 +339,6 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-
       {/* Services Section */}
       <section id="services" className="py-20 px-6 relative">
         <div className="relative z-10 max-w-6xl mx-auto">
@@ -261,58 +368,142 @@ const HomePage: React.FC = () => {
         <div className="relative z-10 max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-5xl md:text-6xl font-serif text-[#4e4637] mb-6">Order Request Form ✨</h2>
+            <p className="text-[#4e4637]/70 max-w-2xl mx-auto">
+              Tell me about your dream embroidery project! Include as many details as possible and attach reference images if you have them.
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} encType="multipart/form-data">
             <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-[#bba987]/30 overflow-hidden p-8 space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
-                <input type="text" name="firstName" placeholder="First Name*" value={formData.firstName} onChange={handleInputChange} className="p-4 rounded-xl border border-[#bba987]/50 w-full" required />
-                <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} className="p-4 rounded-xl border border-[#bba987]/50 w-full" />
+                <input 
+                  type="text" 
+                  name="firstName" 
+                  placeholder="First Name*" 
+                  value={formData.firstName} 
+                  onChange={handleInputChange} 
+                  className="p-4 rounded-xl border border-[#bba987]/50 w-full focus:outline-none focus:ring-2 focus:ring-[#bba987] focus:border-transparent" 
+                  required 
+                />
+                <input 
+                  type="text" 
+                  name="lastName" 
+                  placeholder="Last Name" 
+                  value={formData.lastName} 
+                  onChange={handleInputChange} 
+                  className="p-4 rounded-xl border border-[#bba987]/50 w-full focus:outline-none focus:ring-2 focus:ring-[#bba987] focus:border-transparent" 
+                />
               </div>
               <div className="grid md:grid-cols-2 gap-6">
-                <input type="email" name="email" placeholder="Email*" value={formData.email} onChange={handleInputChange} className="p-4 rounded-xl border border-[#bba987]/50 w-full" required />
-                <input type="tel" name="phone" placeholder="Phone" value={formData.phone} onChange={handleInputChange} className="p-4 rounded-xl border border-[#bba987]/50 w-full" />
+                <input 
+                  type="email" 
+                  name="email" 
+                  placeholder="Email*" 
+                  value={formData.email} 
+                  onChange={handleInputChange} 
+                  className="p-4 rounded-xl border border-[#bba987]/50 w-full focus:outline-none focus:ring-2 focus:ring-[#bba987] focus:border-transparent" 
+                  required 
+                />
+                <input 
+                  type="tel" 
+                  name="phone" 
+                  placeholder="Phone (optional)" 
+                  value={formData.phone} 
+                  onChange={handleInputChange} 
+                  className="p-4 rounded-xl border border-[#bba987]/50 w-full focus:outline-none focus:ring-2 focus:ring-[#bba987] focus:border-transparent" 
+                />
               </div>
-              <textarea name="description" placeholder="Project Description*" value={formData.description} onChange={handleInputChange} className="p-4 rounded-xl border border-[#bba987]/50 w-full h-32" required />
+              <textarea 
+                name="description" 
+                placeholder="Project Description* - Tell me about your vision, colors, size, timeline, etc." 
+                value={formData.description} 
+                onChange={handleInputChange} 
+                className="p-4 rounded-xl border border-[#bba987]/50 w-full h-32 focus:outline-none focus:ring-2 focus:ring-[#bba987] focus:border-transparent resize-none" 
+                required 
+              />
 
-              {/* File Picker */}
-              <label className="w-full p-4 border border-[#bba987]/50 rounded-xl bg-white/80 cursor-pointer flex justify-center items-center">
-                {selectedFiles.length > 0 ? 'Add more files' : 'Choose files'}
-                <input type="file" multiple className="hidden" onChange={handleFileChange} accept="image/*" />
-              </label>
-              {selectedFiles.length > 0 && (
-                <p className="text-[#4e4637]/70 mt-2 text-sm">
-                  Total size: {(totalSize / 1024 / 1024).toFixed(2)} MB / 8 MB
-                </p>
-              )}
-
-              {/* File Previews */}
-              {selectedFiles.length > 0 && (
-                <div className="flex flex-wrap gap-4 mt-2">
-                  {selectedFiles.map((file, i) => (
-                    <div key={i} className="relative w-24 h-24">
-                      <img src={URL.createObjectURL(file)} alt={`preview-${i}`} className="w-full h-full object-cover rounded-xl border border-[#bba987]/50" />
-                      <button type="button" onClick={() => removeFile(i)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">✕</button>
+              {/* File Upload Section */}
+              <div className="space-y-4">
+                <label className="w-full p-6 border-2 border-dashed border-[#bba987]/50 rounded-xl bg-white/80 cursor-pointer flex flex-col items-center justify-center hover:border-[#bba987] hover:bg-[#bba987]/5 transition-all duration-300 relative">
+                  <div className="text-center">
+                    <div className="text-4xl mb-2">📸</div>
+                    <p className="text-[#4e4637] font-medium">
+                      {selectedFiles.length > 0 ? 'Add More Reference Images' : 'Upload Reference Images'}
+                    </p>
+                    <p className="text-[#4e4637]/60 text-sm mt-1">
+                      Images will be automatically compressed • Max 5MB total
+                    </p>
+                  </div>
+                  <input 
+                    type="file" 
+                    multiple 
+                    className="hidden" 
+                    onChange={handleFileChange} 
+                    accept="image/*" 
+                    disabled={isCompressing || isSubmitting}
+                  />
+                  {isCompressing && (
+                    <div className="absolute inset-0 bg-white/90 rounded-xl flex items-center justify-center">
+                      <div className="text-[#bba987] font-medium">Compressing images...</div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  )}
+                </label>
+                
+                {selectedFiles.length > 0 && (
+                  <div className="bg-[#bba987]/10 rounded-xl p-4">
+                    <p className="text-[#4e4637]/70 text-sm mb-3">
+                      Selected files ({selectedFiles.length}) • Total size: {(totalSize / 1024 / 1024).toFixed(1)} MB / 5.0 MB
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                      {selectedFiles.map((file, i) => (
+                        <div key={i} className="relative group">
+                          <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-[#bba987]/30">
+                            <img 
+                              src={URL.createObjectURL(file)} 
+                              alt={`preview-${i}`} 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <button 
+                            type="button" 
+                            onClick={() => removeFile(i)} 
+                            className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold transition-colors duration-200"
+                            title="Remove image"
+                          >
+                            ×
+                          </button>
+                          <p className="text-xs text-[#4e4637]/60 mt-1 max-w-20 truncate">
+                            {(file.size / 1024).toFixed(0)}KB
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
 
-              <button type="submit" disabled={isSubmitting} className="w-full py-4 bg-gradient-to-r from-[#bba987] to-[#4e4637] text-white rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                {isSubmitting ? '✨ Submitting...' : '⭐️ Submit My Order Request ⭐️'}
+              <button 
+                type="submit" 
+                disabled={isSubmitting || isCompressing} 
+                className="w-full py-4 bg-gradient-to-r from-[#bba987] to-[#4e4637] text-white rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {isSubmitting ? '✨ Sending Your Request...' : '⭐️ Submit My Order Request ⭐️'}
               </button>
             </div>
           </form>
         </div>
       </section>
-      {/* Thank You Modal */}
+
+      {/* Alert Modal */}
       {showAlert && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4">
           <div className="bg-white rounded-3xl p-8 max-w-md mx-auto shadow-2xl text-center animate-fadeIn">
             <Heart className="w-12 h-12 text-[#bba987] mx-auto mb-4 animate-pulse" />
-            <h3 className="text-2xl font-semibold text-[#4e4637] mb-2">Thank You!</h3>
-            <p className="text-[#4e4637]/80 mb-6">
-              Your order request has been sent. I’ll get back to you within 24 hours with a custom quote ✨
+            <h3 className="text-2xl font-semibold text-[#4e4637] mb-4">
+              {alertMessage.includes('successfully') ? 'Thank You!' : 'Oops!'}
+            </h3>
+            <p className="text-[#4e4637]/80 mb-6 leading-relaxed">
+              {alertMessage}
             </p>
             <button
               onClick={() => setShowAlert(false)}
