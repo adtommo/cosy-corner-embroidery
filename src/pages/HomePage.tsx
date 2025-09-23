@@ -212,7 +212,7 @@ const HomePage: React.FC = () => {
       payload.append('description', formData.description.trim());
       
       // Add files
-      selectedFiles.forEach((file, index) => {
+      selectedFiles.forEach((file) => {
         payload.append('files', file, file.name);
       });
 
