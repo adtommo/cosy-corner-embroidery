@@ -20,7 +20,6 @@ interface Service {
 }
 
 const MAX_TOTAL_SIZE = 5 * 1024 * 1024; // Reduced to 5MB for safety
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB per file
 
 // Enhanced image compression
 const compressImage = (
@@ -132,12 +131,6 @@ const HomePage: React.FC = () => {
 
       try {
         const compressed = await compressImage(file);
-        
-        // Check if compressed file still too large
-        if (compressed.size > MAX_FILE_SIZE) {
-          skippedFiles.push(`${file.name} (still too large after compression)`);
-          continue;
-        }
 
         // Check total size
         if (newTotalSize + compressed.size > MAX_TOTAL_SIZE) {
@@ -249,7 +242,7 @@ const HomePage: React.FC = () => {
       } else {
         // Error from server
         console.error('Server error:', result);
-        setAlertMessage(result?.message || `Failed to send order request. Please try again or contact us directly.`);
+        setAlertMessage(result?.message || `Failed to send order request.`);
         setShowAlert(true);
       }
     } catch (error) {
@@ -388,10 +381,11 @@ const HomePage: React.FC = () => {
                 <input 
                   type="text" 
                   name="lastName" 
-                  placeholder="Last Name" 
+                  placeholder="Last Name*" 
                   value={formData.lastName} 
                   onChange={handleInputChange} 
                   className="p-4 rounded-xl border border-[#bba987]/50 w-full focus:outline-none focus:ring-2 focus:ring-[#bba987] focus:border-transparent" 
+                  required
                 />
               </div>
               <div className="grid md:grid-cols-2 gap-6">
@@ -415,7 +409,7 @@ const HomePage: React.FC = () => {
               </div>
               <textarea 
                 name="description" 
-                placeholder="Project Description* - Tell me about your vision, colors, size, timeline, etc." 
+                placeholder="Project Description* - Tell me about your vision!" 
                 value={formData.description} 
                 onChange={handleInputChange} 
                 className="p-4 rounded-xl border border-[#bba987]/50 w-full h-32 focus:outline-none focus:ring-2 focus:ring-[#bba987] focus:border-transparent resize-none" 
@@ -503,7 +497,14 @@ const HomePage: React.FC = () => {
               {alertMessage.includes('successfully') ? 'Thank You!' : 'Oops!'}
             </h3>
             <p className="text-[#4e4637]/80 mb-6 leading-relaxed">
-              {alertMessage}
+              {alertMessage}<br/>
+              {!alertMessage.includes('successfully') && (
+                <span className="text-sm">
+                  Something went wrong.<br/>
+                  You can <a href="https://m.me/embroiderycosycorner" className="text-[#bba987] underline">Send us a Message</a> or email us at <a href="mailto:hello@cosycornerembroidery.com">hello@cosycornerembroidery.com</a>.
+                </span>
+
+              )}
             </p>
             <button
               onClick={() => setShowAlert(false)}
