@@ -237,7 +237,7 @@ const HomePage: React.FC = () => {
         });
         setSelectedFiles([]);
         setTotalSize(0);
-        setAlertMessage('Your order request has been sent successfully! I\'ll get back to you within 24 hours with a custom quote ✨');
+        setAlertMessage('Your order request has been sent successfully! I&apos;ll get back to you within 24 hours with a custom quote ✨');
         setShowAlert(true);
       } else {
         // Error from server
@@ -289,7 +289,7 @@ const HomePage: React.FC = () => {
       <section className="py-20 px-6 relative">
         <div className="relative z-10 max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-5xl md:text-6xl font-serif text-[#4e4637] mb-6">Hi, I'm Ellie! 👋</h2>
+            <h2 className="text-5xl md:text-6xl font-serif text-[#4e4637] mb-6">Hi, I&apos;m Ellie! 👋</h2>
             <div className="w-32 h-1 bg-[#bba987] mx-auto rounded-full"></div>
           </div>
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -519,7 +519,7 @@ const HomePage: React.FC = () => {
       {/* Contact Section */}
       <section id="contact" className="py-20 px-6 relative">
         <div className="relative z-10 max-w-4xl mx-auto text-center">
-          <h2 className="text-5xl font-serif text-[#4e4637] mb-16">Let's Connect 💕</h2>
+          <h2 className="text-5xl font-serif text-[#4e4637] mb-16">Let&apos;s Connect 💕</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div onClick={() => window.open('https://www.facebook.com/profile.php?id=61580462263374')} className="bg-white/80 backdrop-blur-lg cursor-pointer rounded-3xl p-8 shadow-xl border border-[#bba987]/30 transform hover:scale-105 transition-transform duration-300">
               <SiFacebook className="w-8 h-8 mx-auto mb-4 text-[#bba987]" />
