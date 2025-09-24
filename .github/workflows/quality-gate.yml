@@ -20,12 +20,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 23.1.0 # Node first
+          node-version: 23.1.0
 
       - name: Setup PNPM
         uses: pnpm/action-setup@v4
         with:
-          version: 9.12.3 # PNPM second
+          version: 9.12.3
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -63,7 +63,46 @@ jobs:
       - run: pnpm lint
       - run: pnpm format:check
 
-  # 3️⃣ Type-check
+  # 3️⃣ Auto-fix lint/format (runs only if lint fails)
+  lint-fix:
+    runs-on: ubuntu-latest
+    needs: lint
+    if: ${{ needs.lint.result == 'failure' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23.1.0
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
+
+      - name: Restore node_modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Run lint & format auto-fix
+        run: |
+          pnpm lint --fix
+          pnpm format:fix
+
+      - name: Commit auto-fixes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: auto-fix lint & format'
+          branch: ${{ github.head_ref }}
+          author_name: 'github-actions'
+          author_email: 'github-actions@github.com'
+          signoff: true
+          file_pattern: '.'
+
+  # 4️⃣ Type-check
   type-check:
     runs-on: ubuntu-latest
     needs: setup
@@ -88,7 +127,7 @@ jobs:
 
       - run: pnpm tsc --noEmit
 
-  # 4️⃣ Test
+  # 5️⃣ Test
   test:
     runs-on: ubuntu-latest
     needs: setup
@@ -118,7 +157,7 @@ jobs:
         with:
           fail_ci_if_error: false
 
-  # 5️⃣ Build
+  # 6️⃣ Build
   build:
     runs-on: ubuntu-latest
     needs: setup
@@ -150,7 +189,7 @@ jobs:
           path: dist/
           retention-days: 7
 
-  # 6️⃣ Security scan
+  # 7️⃣ Security scan
   security-scan:
     runs-on: ubuntu-latest
     needs: setup
@@ -185,7 +224,7 @@ jobs:
         run: pnpm audit --audit-level=moderate
         continue-on-error: true
 
-  # 7️⃣ CodeQL
+  # 8️⃣ CodeQL
   codeql:
     runs-on: ubuntu-latest
     needs: setup
@@ -212,39 +251,3 @@ jobs:
           queries: security-extended,security-and-quality
       - uses: github/codeql-action/autobuild@v3
       - uses: github/codeql-action/analyze@v3
-
-  dependabot-fix:
-    if: github.actor == 'dependabot[bot]'
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 23.1.0
-
-      - name: Setup PNPM
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.12.3
-
-      - name: Restore node_modules
-        uses: actions/cache@v3
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-
-      - name: Run lint & format auto-fix
-        run: pnpm format:fix
-
-      - name: Commit auto-fixes
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: 'chore: auto-fix lint & format for Dependabot PR'
-          branch: ${{ github.head_ref }}
-          author_name: 'github-actions'
-          author_email: 'github-actions@github.com'
-          signoff: true
-          file_pattern: '.'
