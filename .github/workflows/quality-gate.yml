@@ -37,12 +37,12 @@ jobs:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
-  # 2️⃣ Lint
+  # 2️⃣ Lint + auto-fix
   lint:
     runs-on: ubuntu-latest
     needs: setup
     outputs:
-      lint_failed: ${{ steps.lint_check.outcome == 'failure' }}
+      changes_committed: ${{ steps.commit.outputs.changes_committed }}
     steps:
       - uses: actions/checkout@v4
 
@@ -62,45 +62,15 @@ jobs:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
-      - name: Run ESLint
-        id: lint_check
-        run: pnpm lint
-        continue-on-error: true
-
-      - name: Check formatting
-        run: pnpm format:check
-        continue-on-error: true
-
-  # 3️⃣ Auto-fix lint/format (runs if lint produced errors)
-  lint-fix:
-    runs-on: ubuntu-latest
-    needs: lint
-    if: ${{ needs.lint.outputs.lint_failed == 'true' }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 23.1.0
-
-      - name: Setup PNPM
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.12.3
-
-      - name: Restore node_modules
-        uses: actions/cache@v3
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-
+      # Auto-fix lint & format
       - name: Run lint & format auto-fix
         run: |
           pnpm lint --fix
           pnpm format:fix
 
-      - name: Commit auto-fixes
+      # Commit auto-fixed changes
+      - name: Commit auto-fixes if any
+        id: commit
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'chore: auto-fix lint & format'
@@ -109,13 +79,22 @@ jobs:
           commit_user_name: 'github-actions[bot]'
           commit_user_email: '41898282+github-actions[bot]@users.noreply.github.com'
           commit_author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+          skip_dirty_check: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # 4️⃣ Type-check
+      # Fail workflow if remaining issues exist and no changes were committed
+      - name: Fail if lint errors remain
+        if: ${{ steps.commit.outputs.changes_committed == 'false' }}
+        run: |
+          pnpm lint
+          pnpm format:check
+
+  # 3️⃣ Type-check
   type-check:
     runs-on: ubuntu-latest
-    needs: setup
+    needs: lint
+    if: ${{ needs.lint.outputs.changes_committed == 'false' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -137,10 +116,11 @@ jobs:
 
       - run: pnpm tsc --noEmit
 
-  # 5️⃣ Test
+  # 4️⃣ Test
   test:
     runs-on: ubuntu-latest
-    needs: setup
+    needs: lint
+    if: ${{ needs.lint.outputs.changes_committed == 'false' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -167,10 +147,11 @@ jobs:
         with:
           fail_ci_if_error: false
 
-  # 6️⃣ Build
+  # 5️⃣ Build
   build:
     runs-on: ubuntu-latest
-    needs: setup
+    needs: lint
+    if: ${{ needs.lint.outputs.changes_committed == 'false' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -199,10 +180,11 @@ jobs:
           path: dist/
           retention-days: 7
 
-  # 7️⃣ Security scan
+  # 6️⃣ Security scan
   security-scan:
     runs-on: ubuntu-latest
-    needs: setup
+    needs: lint
+    if: ${{ needs.lint.outputs.changes_committed == 'false' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -234,10 +216,11 @@ jobs:
         run: pnpm audit --audit-level=moderate
         continue-on-error: true
 
-  # 8️⃣ CodeQL
+  # 7️⃣ CodeQL
   codeql:
     runs-on: ubuntu-latest
-    needs: setup
+    needs: lint
+    if: ${{ needs.lint.outputs.changes_committed == 'false' }}
     permissions:
       security-events: write
       actions: read
