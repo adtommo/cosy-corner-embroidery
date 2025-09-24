@@ -302,7 +302,7 @@ const HomePage: React.FC = () => {
                   From <span className="text-[#bba987] font-semibold">whimsical designs</span> to <span className="text-[#bba987] font-semibold">elegant monograms</span>, I work to bring your vision to life.
                 </p>
                 <p className="text-lg text-[#4e4637] leading-relaxed">
-                  Let's create something <span className="text-[#bba987] font-semibold">extraordinary</span> together, something that will be treasured for years to come!
+                  Let&apos;s create something <span className="text-[#bba987] font-semibold">extraordinary</span> together, something that will be treasured for years to come!
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
