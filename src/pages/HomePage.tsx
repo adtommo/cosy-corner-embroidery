@@ -107,7 +107,7 @@ const HomePage: React.FC = () => {
   });
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showAlert, setShowAlert] = useState(true);
+  const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [totalSize, setTotalSize] = useState(0);
   const [isCompressing, setIsCompressing] = useState(false);
