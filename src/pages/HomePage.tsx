@@ -107,7 +107,7 @@ const HomePage: React.FC = () => {
   });
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showAlert, setShowAlert] = useState(false);
+  const [showAlert, setShowAlert] = useState(true);
   const [alertMessage, setAlertMessage] = useState('');
   const [totalSize, setTotalSize] = useState(0);
   const [isCompressing, setIsCompressing] = useState(false);
@@ -256,7 +256,7 @@ const HomePage: React.FC = () => {
         setSelectedFiles([]);
         setTotalSize(0);
         setAlertMessage(
-          'Your order request has been sent successfully! I&apos;ll get back to you within 24 hours with a custom quote ✨',
+          `Your order request has been sent successfully! I'll get back to you within 24 hours with a custom quote ✨`,
         );
         setShowAlert(true);
       } else {
@@ -286,8 +286,7 @@ const HomePage: React.FC = () => {
     {
       icon: '🎁',
       title: 'Personalised Gifts',
-      description:
-        'Celebrate life&apos;s milestones with embroidered keepsakes.',
+      description: `Celebrate life's milestones with embroidered keepsakes.`,
       color: 'from-[#bba987]/40 to-[#bba987]/60',
     },
     {
