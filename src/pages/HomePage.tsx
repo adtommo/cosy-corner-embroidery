@@ -256,7 +256,7 @@ const HomePage: React.FC = () => {
 
   const services: Service[] = [
     { icon: '👕', title: 'Wearable Art', description: 'Elevate your wardrobe with hand-embroidered designs.', color: 'from-[#bba987]/30 to-[#bba987]/50' },
-    { icon: '🎁', title: 'Personalised Gifts', description: 'Celebrate life`s milestones with embroidered keepsakes.', color: 'from-[#bba987]/40 to-[#bba987]/60' },
+    { icon: '🎁', title: 'Personalised Gifts', description: 'Celebrate life&apos;s milestones with embroidered keepsakes.', color: 'from-[#bba987]/40 to-[#bba987]/60' },
     { icon: '🪡', title: 'Custom Home Embroidery', description: 'Add warmth to your home with embroidered décor.', color: 'from-[#bba987]/35 to-[#bba987]/55' },
     { icon: '✨', title: 'One-of-a-Kind Creations', description: 'Collaborate on unique hand-embroidered pieces.', color: 'from-[#bba987]/45 to-[#bba987]/65' }
   ];
