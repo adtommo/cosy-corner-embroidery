@@ -714,6 +714,12 @@ const HomePage: React.FC = () => {
           <p className="text-[#fff]/70 mt-6">
             &copy; 2025 Cosy Corner Embroidery. All rights reserved.
           </p>
+          <p className="text-[#fff]/50 mt-2 text-sm">
+            Website by{' '}
+            <a href="https://atomicrocketdigital.com" className="underline">
+              Atomic Rocket Digital
+            </a>
+          </p>
         </div>
       </footer>
     </div>
