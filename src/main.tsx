@@ -9,7 +9,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <StyledEngineProvider enableCssLayer>
       <GlobalStyles styles="@layer theme, base, mui, components, utilities;" />
-        <App />
+      <App />
     </StyledEngineProvider>
   </React.StrictMode>,
 );
