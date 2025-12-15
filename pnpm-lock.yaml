@@ -38,8 +38,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-icons:
-        specifier: ^4.12.0
-        version: 4.12.0(react@18.3.1)
+        specifier: ^5.5.0
+        version: 5.5.0(react@18.3.1)
       react-router-dom:
         specifier: ^7.9.3
         version: 7.9.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -3802,18 +3802,18 @@ packages:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
 
-  react-icons@4.12.0:
-    resolution:
-      {
-        integrity: sha512-IBaDuHiShdZqmfc/TwHu6+d6k2ltNCf3AszxNmjJc1KUfXdEeRJOKyNvLmAHaarhzGmTSVygNdyu8/opXv2gaw==,
-      }
-    peerDependencies:
-      react: '*'
-
   react-icons@5.0.1:
     resolution:
       {
         integrity: sha512-WqLZJ4bLzlhmsvme6iFdgO8gfZP17rfjYEJ2m9RsZjZ+cc4k1hTzknEz63YS1MeT50kVzoa1Nz36f4BEx+Wigw==,
+      }
+    peerDependencies:
+      react: '*'
+
+  react-icons@5.5.0:
+    resolution:
+      {
+        integrity: sha512-MEFcXdkP3dLo8uumGI5xN3lDFNsRtrjbOEKDLD7yv76v4wpnEq2Lt2qeHaQOr34I/wPN3s3+N08WkQ+CW37Xiw==,
       }
     peerDependencies:
       react: '*'
@@ -7076,11 +7076,11 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  react-icons@4.12.0(react@18.3.1):
+  react-icons@5.0.1(react@18.3.1):
     dependencies:
       react: 18.3.1
 
-  react-icons@5.0.1(react@18.3.1):
+  react-icons@5.5.0(react@18.3.1):
     dependencies:
       react: 18.3.1
 
