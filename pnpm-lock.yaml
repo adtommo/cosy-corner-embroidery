@@ -90,8 +90,8 @@ importers:
         specifier: ^10.4.21
         version: 10.4.21(postcss@8.5.6)
       axe-core:
-        specifier: ^4.10.3
-        version: 4.10.3
+        specifier: ^4.11.0
+        version: 4.11.0
       eslint:
         specifier: ^9.36.0
         version: 9.36.0(jiti@1.21.7)
@@ -1837,10 +1837,10 @@ packages:
       }
     engines: { node: '>= 0.4' }
 
-  axe-core@4.10.3:
+  axe-core@4.11.0:
     resolution:
       {
-        integrity: sha512-Xm7bpRXnDSX2YE2YFfBk2FnF0ep6tmG7xPh8iHee8MIcrgq762Nkce856dYtJYLkuIoYZvGfTs/PbZhideTcEg==,
+        integrity: sha512-ilYanEU8vxxBexpJd8cWM4ElSQq4QctCLKih0TSfjIfCQTeyH/6zVrmIJfLPrKTKJRbiG+cfnZbQIjAlJmF1jQ==,
       }
     engines: { node: '>=4' }
 
@@ -2404,6 +2404,7 @@ packages:
       {
         integrity: sha512-dRUD2LOdEqI4zXHqbQ442blQAzdSuShAaiSq5Vtyy6LT08YUf0oOjBDo4VPx0dCPgiPWh1WB4dtbLOd0kOlDPQ==,
       }
+    deprecated: This version introduced false positive. This was reverted in 0.4.26
     peerDependencies:
       eslint: '>=8.40'
 
@@ -5831,7 +5832,7 @@ snapshots:
     dependencies:
       possible-typed-array-names: 1.1.0
 
-  axe-core@4.10.3: {}
+  axe-core@4.11.0: {}
 
   babel-plugin-macros@3.1.0:
     dependencies:
@@ -7606,7 +7607,7 @@ snapshots:
   vitest-axe@0.1.0(vitest@3.2.4):
     dependencies:
       aria-query: 5.3.2
-      axe-core: 4.10.3
+      axe-core: 4.11.0
       chalk: 5.6.2
       dom-accessibility-api: 0.5.16
       lodash-es: 4.17.21
