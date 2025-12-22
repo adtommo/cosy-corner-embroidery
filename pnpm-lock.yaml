@@ -14,8 +14,8 @@ importers:
         specifier: ^11.14.1
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.1.12)(react@18.3.1))(@types/react@19.1.12)(react@18.3.1)
       '@icons-pack/react-simple-icons':
-        specifier: ^13.7.0
-        version: 13.7.0(react@18.3.1)
+        specifier: ^13.8.0
+        version: 13.8.0(react@18.3.1)
       '@mui/material':
         specifier: ^7.3.2
         version: 7.3.2(@emotion/react@11.14.0(@types/react@19.1.12)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.1.12)(react@18.3.1))(@types/react@19.1.12)(react@18.3.1))(@types/react@19.1.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -831,10 +831,10 @@ packages:
       }
     engines: { node: '>=18.18' }
 
-  '@icons-pack/react-simple-icons@13.7.0':
+  '@icons-pack/react-simple-icons@13.8.0':
     resolution:
       {
-        integrity: sha512-Vx5mnIm/3gD/9dpCfw/EdCXwzCswmvWnvMjL6zUJTbpk2PuyCdx5zSfiX8KQKYszD/1Z2mfaiBtqCxlHuDcpuA==,
+        integrity: sha512-iZrhL1fSklfCCVn68IYHaAoKfcby3RakUTn2tRPyHBkhr2tkYqeQbjJWf+NizIYBzKBn2IarDJXmTdXd6CuEfw==,
       }
     peerDependencies:
       react: ^16.13 || ^17 || ^18 || ^19
@@ -5156,7 +5156,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@icons-pack/react-simple-icons@13.7.0(react@18.3.1)':
+  '@icons-pack/react-simple-icons@13.8.0(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
